@@ -1,6 +1,7 @@
 import socket
 import select
 import pickle
+import hashlib
 
 HEADERSIZE = 10
 IP = "127.0.0.1"
@@ -45,6 +46,39 @@ def receiveMessage(clientSocket):
         print('General error', str(e))
 
 
+def sendFile(clientSocket):
+    file = open(FILE_1, 'rb')
+    data = file.read()
+    file.close()
+    print("File size:", len(data))
+    messageHeader = f"{len(data):<{HEADERSIZE}}".encode("utf-8")
+    print(f"Message header: {messageHeader}")
+    #print(f"Message payload: {data}")
+
+    # Retornamos el header con el mensaje convertido en bytes
+    #print(f"Sending message '{messageHeader + data}'")
+    return messageHeader + data
+
+
+
+
+def sendDigest(clientSocket):
+    print("Iniciando envio del digest del archivo...")
+    file = open(FILE_1, 'rb')
+    data = file.read()
+    file.close()
+
+    m = hashlib.sha256()
+    m.update(data)
+    digest = m.digest()
+
+    messageHeader = f"{len(digest):<{HEADERSIZE}}".encode("utf-8")
+    print(f"Message header: {messageHeader}")
+    print(f"Sending digest '{messageHeader + digest}'")
+    #digest = createMessage(m.digest())  # Creamos un mensaje con el digest del archivo
+    #notifiedSocket.sendall(digest)
+    return messageHeader + digest
+
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
@@ -86,18 +120,34 @@ while True:
                 notifiedSocket.sendall(message)
             # Si el cliente escoge el primer archivo
             elif message['message'] == "1":
+                file = sendFile(FILE_1)
+                notifiedSocket.sendall(file)
+                '''
                 # Abrir el archivo a enviar
                 file = open(FILE_1, 'rb')
                 # Empezar transmision del archivo
                 # Chequear como manejar integridad
                 print("Enviando archivo...")
                 b = file.read(1024)
+                i=0
                 while b:
-                    print("Enviando archivo...")
+                    print(f"Enviando archivo parte {i}...")
                     notifiedSocket.send(b)
                     b = file.read(1024)
+                    i=i+1
                 print("Archivo enviado al cliente exitosamente.")
+                file.close()
+                
+                '''
+
+
+            elif message['message'] == "DIGEST":
+                #Enviar el digest del archivo al cliente:
+                digest = sendDigest(notifiedSocket)
+                notifiedSocket.sendall(digest)
+
                 #Cierro conexión con el cliente y lo remuevo de la lista de sockets
+
                 notifiedSocket.close()
                 socketsList.remove(notifiedSocket)
 
@@ -106,39 +156,28 @@ while True:
         socketsList.remove(notifiedSocket)
 
 
-
 '''
-clientSocket, addr = serverSocket.accept()
-print(f"Connection from {addr} has been established!")
+def sendFile(fileName):
+    print("Iniciando envio del archivo...")
+    file = open(fileName, 'rb')
+    data = file.read()
+    file.close()
+    # Chequear el atributo message size, puede que esté incorrecto
+    msg = {"fileSize": len(data),
+           "file": data}
+    msg = pickle.dumps(msg)
+    # Añadir header de 10 bytes
+    messageHeader = f"{len(msg):<{HEADERSIZE}}".encode("utf-8")
 
-file = open("./files/prueba.pdf", 'rb')
+    print(f"Message header: {messageHeader}")
+    #print(f"Message payload: {msg}")
 
-b = file.read(1024)
-while b:
-    clientSocket.send(b)
-    b = file.read(1024)
-
-
-clientSocket.close()
-#clientSocket.send(message)
-
-
+    # Retornamos el header con el mensaje convertido en bytes
+    #print(f"Sending message '{messageHeader + msg}'")
+    print("Archivo enviado exitosamente.")
+    return messageHeader + msg
 '''
 
-'''
-def handshake(clientSocket):
-    try:
-        # Ahorita agregamos header
-        message = clientSocket.recv(1024)
-        while message:
-            message = clientSocket.recv(1024)
-        #message = message.decode("utf-8")
-        print(f"Message handshake received from client: {message}")
-        print(message)
-        if message.upper() == "HELLO":
-            #Si el mensaje es 'hello'. responder con 'hello back'
-            message = "HELLO BACK"
-            clientSocket.sendall(message.encode("utf-8"))
-    except Exception as e:
-        print('General error', str(e))
-'''
+
+
+
