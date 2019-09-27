@@ -7,7 +7,7 @@ HEADERSIZE = 10
 IP = "127.0.0.1"
 PORT = 1236
 FILE_1 = "./files/prueba.pdf"
-FILE_2 = ""
+FILE_2 = "./files/video-5.mp4"
 
 def createMessage(message):
     #Chequear el atributo message size, puede que esté incorrecto
@@ -46,8 +46,8 @@ def receiveMessage(clientSocket):
         print('General error', str(e))
 
 
-def sendFile(clientSocket):
-    file = open(FILE_1, 'rb')
+def sendFile(fileName):
+    file = open(fileName, 'rb')
     data = file.read()
     file.close()
     print("File size:", len(data))
@@ -62,9 +62,9 @@ def sendFile(clientSocket):
 
 
 
-def sendDigest(clientSocket):
+def sendDigest(fileName):
     print("Iniciando envio del digest del archivo...")
-    file = open(FILE_1, 'rb')
+    file = open(fileName, 'rb')
     data = file.read()
     file.close()
 
@@ -83,7 +83,7 @@ serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 serverSocket.bind((IP, PORT))
-serverSocket.listen(5) # Listen to five connections
+serverSocket.listen(25) # Listen to five connections
 
 socketsList = [serverSocket]
 
@@ -139,17 +139,35 @@ while True:
                 file.close()
                 
                 '''
+            elif message['message'] == "2":
+                file = sendFile(FILE_2)
+                notifiedSocket.sendall(file)
 
-
-            elif message['message'] == "DIGEST":
+            elif message['message'] == "DIGEST1":
                 #Enviar el digest del archivo al cliente:
-                digest = sendDigest(notifiedSocket)
+                digest = sendDigest(FILE_1)
                 notifiedSocket.sendall(digest)
 
                 #Cierro conexión con el cliente y lo remuevo de la lista de sockets
 
                 notifiedSocket.close()
                 socketsList.remove(notifiedSocket)
+            elif message['message'] == "DIGEST2":
+                # Enviar el digest del archivo al cliente:
+                digest = sendDigest(FILE_2)
+                notifiedSocket.sendall(digest)
+
+                # Cierro conexión con el cliente y lo remuevo de la lista de sockets
+
+                notifiedSocket.close()
+                socketsList.remove(notifiedSocket)
+
+            elif message['message'] == "TEST":
+                message = createMessage("OK")
+                notifiedSocket.sendall(message)
+                notifiedSocket.close()
+                socketsList.remove(notifiedSocket)
+
 
     for notifiedSocket in exceptionSockets:
         print("Excepcion con un socket.")
