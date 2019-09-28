@@ -46,6 +46,20 @@ def receiveMessage(clientSocket):
         print('General error', str(e))
 
 
+def receiveMessageText(clientSocket):
+    print("Receiving message from client...")
+    try:
+        # Desarmar header para saber el tamaño en bytes del mensaje
+        text = clientSocket.recv(1024)
+        text = text.decode("utf-8").strip()
+        print(f"Message received from client: {text}")
+        print(text)
+        return text
+    except Exception as e:
+        print('General error', str(e))
+
+
+
 def sendFile(fileName):
     file = open(fileName, 'rb')
     data = file.read()
@@ -101,10 +115,17 @@ while True:
         else:
             # Si el cliente ya tiene una conexión y algo es recibido
             print("Checking which part of the protocol to execute...")
+
             message = receiveMessage(notifiedSocket)
+            #message = receiveMessageText(notifiedSocket)
 
             # Saber que responder dependiendo del protocolo
-            if message['message'] == "HELLO":
+            if message == "TEST":
+                print("Entering TEST case...")
+                notifiedSocket.sendall("OK".encode("utf-8"))
+                notifiedSocket.close()
+                socketsList.remove(notifiedSocket)
+            elif message['message'] == "HELLO":
                 print("Entering HELLO case...")
                 #handshake(clientSocket)  # Hago el handshake con el cliente recién recibido
                 msg = "HELLO BACK"
@@ -122,23 +143,7 @@ while True:
             elif message['message'] == "1":
                 file = sendFile(FILE_1)
                 notifiedSocket.sendall(file)
-                '''
-                # Abrir el archivo a enviar
-                file = open(FILE_1, 'rb')
-                # Empezar transmision del archivo
-                # Chequear como manejar integridad
-                print("Enviando archivo...")
-                b = file.read(1024)
-                i=0
-                while b:
-                    print(f"Enviando archivo parte {i}...")
-                    notifiedSocket.send(b)
-                    b = file.read(1024)
-                    i=i+1
-                print("Archivo enviado al cliente exitosamente.")
-                file.close()
-                
-                '''
+
             elif message['message'] == "2":
                 file = sendFile(FILE_2)
                 notifiedSocket.sendall(file)
@@ -194,6 +199,24 @@ def sendFile(fileName):
     #print(f"Sending message '{messageHeader + msg}'")
     print("Archivo enviado exitosamente.")
     return messageHeader + msg
+'''
+
+'''
+                # Abrir el archivo a enviar
+                file = open(FILE_1, 'rb')
+                # Empezar transmision del archivo
+                # Chequear como manejar integridad
+                print("Enviando archivo...")
+                b = file.read(1024)
+                i=0
+                while b:
+                    print(f"Enviando archivo parte {i}...")
+                    notifiedSocket.send(b)
+                    b = file.read(1024)
+                    i=i+1
+                print("Archivo enviado al cliente exitosamente.")
+                file.close()
+
 '''
 
 
