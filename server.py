@@ -4,7 +4,7 @@ import pickle
 import hashlib
 
 HEADERSIZE = 10
-IP = "127.0.0.1"
+IP = "0.0.0.0"
 PORT = 1236
 FILE_1 = "./files/prueba.pdf"
 FILE_2 = "./files/video-5.mp4"
