@@ -5,7 +5,7 @@
 TCP server implemented in Python 🐍 that hosts files for a client to download them. The client can be found in the following repository: https://github.com/juanesmendez/tcp-client. The integrity of the files received by the client is guaranteed using a hash digest, which is calculated by the server and then sent to the client for him to compare it against the one he calculates on the byte stream he receives.
 
 ### Python libraries 📚
-The following python libraries and classes were used in the client application:
+The following python libraries and classes were used in the server application:
 
 - `socket`
 - `pickle` 🥒: For serializing objects containing chunks of bytes and headers with important information for the client to check.
