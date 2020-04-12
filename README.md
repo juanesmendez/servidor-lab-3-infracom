@@ -8,7 +8,7 @@ TCP server implemented in Python 🐍 that hosts files for a client to download 
 The following python libraries and classes were used in the client application:
 
 - `socket`
-- `pickle` 🥒: For transferring the file in byte chunks.
+- `pickle` 🥒: For serializing objects containing chunks of bytes and headers with important information for the client to check.
 - `hashlib` 🔑#️⃣: For calculating the hash digest of the file that is transferred to the client.
 - `select`: For handling multiple users at once.
 
